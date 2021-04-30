@@ -1,0 +1,47 @@
+Views:
+
+
+def post_message(request):
+    print('*'*100)
+    print('creating message...')
+    if request.method == 'POST':
+        new_message = Message.objects.create(
+            message_text = request.POST['msg'],
+            user = User.objects.get(id = request.session['user'])
+        )
+        new_message.save()
+    return redirect('/wall')
+
+def post_comment(request, msg_id):
+    print('*'*100)
+    print('posting comment...')
+    if request.method == 'POST':
+        new_comment = Comment.objects.create(
+            comment_text = request.POST['cmnt'],
+            user = User.objects.get(id = request.session['user']),
+            message = Message.objects.get(id = msg_id)
+        )
+        new_comment.save()
+    return redirect('/wall')
+
+
+    urls: 
+     url('message', views.post_message),
+     url('comment/<int:msg_id>', views.post_comment),
+
+
+models:
+
+
+class Message(models.Model):
+    message_text = models.TextField()
+    user = models.ForeignKey(User, related_name='messages', on_delete = models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class Comment(models.Model):
+    comment_text = models.TextField()
+    user = models.ForeignKey(User, related_name='comments', on_delete = models.CASCADE)
+    message = models.ForeignKey(Message, related_name='comments', on_delete = models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
